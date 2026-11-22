@@ -1,12 +1,352 @@
 ﻿<Window x:Class="StatsTool.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:StatsTool"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        <TextBlock>Aly is very shy!</TextBlock>
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+
+        Title="SalesScope"
+        Width="1200"
+        Height="760"
+        MinWidth="800"
+        MinHeight="550"
+
+        WindowStartupLocation="Manual"
+        WindowStyle="None"
+        ResizeMode="CanResize"
+        StateChanged="MainWindow_StateChanged"
+
+        Background="White"
+        FontFamily="Segoe UI">
+
+    <!-- Preserve Windows dragging and resizing behavior -->
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome
+            CaptionHeight="43"
+            ResizeBorderThickness="6"
+            CornerRadius="0"
+            GlassFrameThickness="0"
+            UseAeroCaptionButtons="False"/>
+    </shell:WindowChrome.WindowChrome>
+
+
+    <Window.Resources>
+
+        <!-- SIDEBAR BUTTON STYLE -->
+        <Style x:Key="NavigationButtonStyle"
+               TargetType="Button">
+
+            <Setter Property="Height" Value="52"/>
+            <Setter Property="FontSize" Value="19"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="5,0,0,0"/>
+            <Setter Property="Padding" Value="22,0,0,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+
+                        <Border x:Name="ButtonBackground"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+
+                            <ContentPresenter
+                                ContentSource="Content"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Margin="{TemplateBinding Padding}"/>
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+
+                                <Setter TargetName="ButtonBackground"
+                                        Property="Background"
+                                        Value="#154343"/>
+
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+        </Style>
+
+
+        <!-- WINDOW CONTROL BUTTON STYLE -->
+        <Style x:Key="WindowButtonStyle"
+               TargetType="Button">
+
+            <Setter Property="Width" Value="46"/>
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Foreground" Value="#0B1530"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+
+                        <Border x:Name="ButtonBackground"
+                                Background="{TemplateBinding Background}">
+
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"/>
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <Trigger Property="IsMouseOver"
+                                     Value="True">
+
+                                <Setter TargetName="ButtonBackground"
+                                        Property="Background"
+                                        Value="#E9EDF2"/>
+
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+        </Style>
+
+    </Window.Resources>
+
+
+    <!-- =====================================================
+         ROOT WINDOW
+         ===================================================== -->
+
+    <Grid Background="White">
+
+
+        <!-- =====================================================
+             APPLICATION SHELL
+             ===================================================== -->
+
+        <Grid x:Name="AppShell">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="43"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+
+            <!-- TOP BAR -->
+            <Grid Grid.Row="0"
+                  Background="White">
+
+                <!-- SALESSCOPE BRAND -->
+                <StackPanel Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            HorizontalAlignment="Left"
+                            Margin="22,0,0,0">
+
+                    <!-- Vector logo symbol -->
+                    <Canvas Width="23"
+                            Height="23">
+
+                        <Ellipse Canvas.Left="1"
+                                 Canvas.Top="1"
+                                 Width="21"
+                                 Height="21"
+                                 Fill="#009F91"/>
+
+                        <Path Data="M11.5,1 L11.5,11.5 L21.5,11.5 M11.5,11.5 L19,19"
+                              Stroke="White"
+                              StrokeThickness="1.8"/>
+
+                    </Canvas>
+
+                    <TextBlock Text="SalesScope"
+                               FontSize="19"
+                               FontWeight="Bold"
+                               Foreground="#0B1530"
+                               VerticalAlignment="Center"
+                               Margin="10,0,0,0"/>
+
+                </StackPanel>
+
+                <Border Height="1"
+                        Background="#E1E7EE"
+                        VerticalAlignment="Bottom"/>
+
+            </Grid>
+
+
+            <!-- MAIN APPLICATION AREA -->
+            <Grid Grid.Row="1">
+
+                <Grid.ColumnDefinitions>
+
+                    <ColumnDefinition x:Name="SidebarColumn"
+                                      Width="226"/>
+
+                    <ColumnDefinition Width="*"/>
+
+                </Grid.ColumnDefinitions>
+
+
+                <!-- SIDEBAR -->
+                <Grid Grid.Column="0"
+                      Background="#0D1A33">
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="85"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="65"/>
+                    </Grid.RowDefinitions>
+
+
+                    <!-- HAMBURGER -->
+                    <Button Grid.Row="0"
+                            Content="☰"
+                            Width="55"
+                            Height="65"
+                            FontSize="25"
+                            Foreground="#00C4AE"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Top"
+                            Cursor="Hand"
+                            Click="HamburgerButton_Click"/>
+
+
+                    <!-- NAVIGATION -->
+                    <StackPanel x:Name="NavigationItems"
+                                Grid.Row="1">
+
+                        <Button x:Name="DashboardButton"
+                                Content="Dashboard"
+                                Tag="Dashboard"
+                                Style="{StaticResource NavigationButtonStyle}"
+                                Click="NavigationButton_Click"/>
+
+                        <Button x:Name="InventoryButton"
+                                Content="Inventory"
+                                Tag="Inventory"
+                                Style="{StaticResource NavigationButtonStyle}"
+                                Click="NavigationButton_Click"/>
+
+                        <Button x:Name="DailyEntryButton"
+                                Content="Daily Entry"
+                                Tag="Daily Entry"
+                                Style="{StaticResource NavigationButtonStyle}"
+                                Click="NavigationButton_Click"/>
+
+                        <Button x:Name="ComparisonsButton"
+                                Content="Comparisons"
+                                Tag="Comparisons"
+                                Style="{StaticResource NavigationButtonStyle}"
+                                Click="NavigationButton_Click"/>
+
+                        <Button x:Name="InsightsButton"
+                                Content="Insights"
+                                Tag="Insights"
+                                Style="{StaticResource NavigationButtonStyle}"
+                                Click="NavigationButton_Click"/>
+
+                        <Button x:Name="SettingsButton"
+                                Content="Settings"
+                                Tag="Settings"
+                                Style="{StaticResource NavigationButtonStyle}"
+                                Click="NavigationButton_Click"/>
+
+                    </StackPanel>
+
+
+                    <!-- LOGOUT -->
+                    <Button x:Name="LogoutButton"
+                            Grid.Row="2"
+                            Content="Logout"
+                            Style="{StaticResource NavigationButtonStyle}"
+                            Click="LogoutButton_Click"/>
+
+                </Grid>
+
+
+                <!-- INTERCHANGING USERCONTROLS -->
+                <ContentControl x:Name="MainContent"
+                                Grid.Column="1"
+                                Background="White"
+                                HorizontalContentAlignment="Stretch"
+                                VerticalContentAlignment="Stretch"/>
+
+            </Grid>
+
+        </Grid>
+
+
+        <!-- =====================================================
+             AUTHENTICATION AREA
+
+             Start, Login, and Sign Up appear here.
+             The sidebar and application header are hidden.
+             ===================================================== -->
+
+        <Grid x:Name="AuthHost"
+              Background="White"
+              Visibility="Collapsed">
+
+            <ContentControl x:Name="AuthContent"
+                            HorizontalContentAlignment="Stretch"
+                            VerticalContentAlignment="Stretch"/>
+
+        </Grid>
+
+
+        <!-- =====================================================
+             SHARED WINDOW CONTROLS
+
+             IMPORTANT:
+             These are OUTSIDE AppShell and AuthHost.
+
+             They remain visible regardless of which
+             UserControl is currently displayed.
+             ===================================================== -->
+
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Panel.ZIndex="100">
+
+            <!-- MINIMIZE -->
+            <Button Content="−"
+                    Style="{StaticResource WindowButtonStyle}"
+                    shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                    Click="MinimizeButton_Click"/>
+
+            <!-- MAXIMIZE / RESTORE -->
+            <Button x:Name="MaximizeButton"
+                    Content="□"
+                    Style="{StaticResource WindowButtonStyle}"
+                    shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                    Click="MaximizeButton_Click"/>
+
+            <!-- CLOSE -->
+            <Button Content="×"
+                    Style="{StaticResource WindowButtonStyle}"
+                    shell:WindowChrome.IsHitTestVisibleInChrome="True"
+                    Click="CloseButton_Click"/>
+
+        </StackPanel>
+
     </Grid>
+
 </Window>

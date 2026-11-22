@@ -1,0 +1,849 @@
+﻿<UserControl x:Class="StatsTool.Views.InsightsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="#FAFBFD"
+             FontFamily="Segoe UI">
+
+    <!-- ============================================================
+         FRONTEND TEAM
+         ============================================================
+
+         This UserControl is hosted by MainWindow.
+
+         MainWindow handles:
+         - Application header
+         - Sidebar navigation
+         - Logout
+         - Window controls
+
+         Preserve the Insights wireframe:
+         - Statistical Summary at upper left
+         - Weekly Sales Trend below it
+         - Statistical Interpretation at right
+         - Responsive layout and scrolling
+
+         The reporting period uses recorded Monday-Sunday weeks.
+
+         ============================================================
+         BACKEND TEAM
+         ============================================================
+
+         Connect Analyze to the statistics service.
+
+         The backend handles:
+         - Retrieving recorded weekly sales
+         - Validating reporting-week selections
+         - Calculating descriptive statistics
+         - Providing trend data
+         - Generating predefined interpretations
+         - Comparing stock with weekly averages
+
+         ============================================================
+         DATABASE TEAM
+         ============================================================
+
+         Maintain:
+         - Product IDs and product records
+         - Selling units
+         - Available stock
+         - Dated sales records
+         - Account ownership
+         - Queries for recorded reporting weeks
+
+         Do not place SQL in this XAML.
+
+         Current numbers are SAMPLE DATA ONLY.
+
+         ============================================================ -->
+
+    <UserControl.Resources>
+
+        <!-- COLORS -->
+
+        <SolidColorBrush x:Key="InInk"
+                         Color="#0B1738"/>
+
+        <SolidColorBrush x:Key="InBlue"
+                         Color="#173AA1"/>
+
+        <SolidColorBrush x:Key="InTeal"
+                         Color="#009B80"/>
+
+        <RotateTransform x:Key="InAxisRotation"
+                         Angle="-90"/>
+
+        <!-- CARD STYLE -->
+
+        <Style x:Key="InCard"
+               TargetType="Border">
+
+            <Setter Property="Background"
+                    Value="White"/>
+
+            <Setter Property="BorderBrush"
+                    Value="#D7E3F3"/>
+
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+
+            <Setter Property="CornerRadius"
+                    Value="16"/>
+
+            <Setter Property="Padding"
+                    Value="16"/>
+
+        </Style>
+
+        <!-- SECTION TITLE -->
+
+        <Style x:Key="InSectionTitle"
+               TargetType="TextBlock">
+
+            <Setter Property="FontSize"
+                    Value="24"/>
+
+            <Setter Property="FontWeight"
+                    Value="Bold"/>
+
+            <Setter Property="Foreground"
+                    Value="{StaticResource InInk}"/>
+
+        </Style>
+
+        <!-- FILTER LABEL -->
+
+        <Style x:Key="InLabel"
+               TargetType="TextBlock">
+
+            <Setter Property="FontSize"
+                    Value="14"/>
+
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+
+            <Setter Property="Foreground"
+                    Value="{StaticResource InInk}"/>
+
+            <Setter Property="VerticalAlignment"
+                    Value="Center"/>
+
+        </Style>
+
+        <!-- REPORTING WEEK DROPDOWNS
+             FRONTEND: Matches Comparisons dropdown styling. -->
+
+        <Style x:Key="InWeekCombo"
+               TargetType="ComboBox">
+
+            <Setter Property="FontSize"
+                    Value="15"/>
+
+            <Setter Property="Foreground"
+                    Value="{StaticResource InInk}"/>
+
+            <Setter Property="Background"
+                    Value="White"/>
+
+            <Setter Property="BorderBrush"
+                    Value="#BDCAEB"/>
+
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+
+            <Setter Property="Height"
+                    Value="42"/>
+
+            <Setter Property="Width"
+                    Value="185"/>
+
+            <Setter Property="Padding"
+                    Value="8,3"/>
+
+            <Setter Property="IsEditable"
+                    Value="False"/>
+
+        </Style>
+
+        <!-- PRIMARY BUTTON -->
+
+        <Style x:Key="InPrimaryButton"
+               TargetType="Button">
+
+            <Setter Property="Width"
+                    Value="180"/>
+
+            <Setter Property="Height"
+                    Value="44"/>
+
+            <Setter Property="Background"
+                    Value="#008C78"/>
+
+            <Setter Property="Foreground"
+                    Value="White"/>
+
+            <Setter Property="FontSize"
+                    Value="16"/>
+
+            <Setter Property="FontWeight"
+                    Value="SemiBold"/>
+
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+
+            <Setter Property="Cursor"
+                    Value="Hand"/>
+
+            <Setter Property="Template">
+
+                <Setter.Value>
+
+                    <ControlTemplate TargetType="Button">
+
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="9">
+
+                            <ContentPresenter
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"/>
+
+                        </Border>
+
+                    </ControlTemplate>
+
+                </Setter.Value>
+
+            </Setter>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsMouseOver"
+                         Value="True">
+
+                    <Setter Property="Background"
+                            Value="#007763"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+        <!-- TABLE CELL TEXT -->
+
+        <Style x:Key="InCellText"
+               TargetType="TextBlock">
+
+            <Setter Property="TextAlignment"
+                    Value="Center"/>
+
+            <Setter Property="Foreground"
+                    Value="{StaticResource InInk}"/>
+
+            <Setter Property="FontSize"
+                    Value="13"/>
+
+            <Setter Property="VerticalAlignment"
+                    Value="Center"/>
+
+        </Style>
+
+        <Style x:Key="InNameText"
+               TargetType="TextBlock"
+               BasedOn="{StaticResource InCellText}">
+
+            <Setter Property="TextAlignment"
+                    Value="Left"/>
+
+            <Setter Property="Margin"
+                    Value="6,0,0,0"/>
+
+        </Style>
+
+        <!-- SELECTED TABLE ROW -->
+
+        <Style x:Key="InRow"
+               TargetType="DataGridRow">
+
+            <Setter Property="Background"
+                    Value="White"/>
+
+            <Setter Property="Foreground"
+                    Value="{StaticResource InInk}"/>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsSelected"
+                         Value="True">
+
+                    <Setter Property="Background"
+                            Value="#DDF7F0"/>
+
+                    <Setter Property="FontWeight"
+                            Value="SemiBold"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+        <Style x:Key="InCell"
+               TargetType="DataGridCell">
+
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+
+            <Setter Property="Foreground"
+                    Value="{StaticResource InInk}"/>
+
+            <Style.Triggers>
+
+                <Trigger Property="IsSelected"
+                         Value="True">
+
+                    <Setter Property="Background"
+                            Value="Transparent"/>
+
+                    <Setter Property="Foreground"
+                            Value="{StaticResource InInk}"/>
+
+                </Trigger>
+
+            </Style.Triggers>
+
+        </Style>
+
+    </UserControl.Resources>
+
+    <!-- ============================================================
+         SCROLLABLE PAGE CONTENT
+         ============================================================ -->
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
+
+        <Grid x:Name="PageRoot"
+              Margin="20"
+              SizeChanged="PageRoot_SizeChanged">
+
+            <Grid.RowDefinitions>
+
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+
+            </Grid.RowDefinitions>
+
+            <!-- =====================================================
+                 PAGE HEADER
+                 ===================================================== -->
+
+            <StackPanel Grid.Row="0"
+                        Margin="0,0,0,14">
+
+                <TextBlock Text="Insights"
+                           FontSize="30"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource InInk}"/>
+
+                <TextBlock
+                    Text="Statistical summaries and interpretations of recorded sales"
+                    FontSize="16"
+                    Foreground="{StaticResource InBlue}"
+                    TextWrapping="Wrap"/>
+
+            </StackPanel>
+
+            <!-- =====================================================
+                 PRODUCT AND REPORTING WEEK FILTERS
+                 ===================================================== -->
+
+            <WrapPanel Grid.Row="1"
+                       Margin="0,0,0,12"
+                       VerticalAlignment="Center">
+
+                <!-- PRODUCT -->
+
+                <StackPanel Orientation="Horizontal"
+                            Margin="0,0,20,10"
+                            VerticalAlignment="Center">
+
+                    <TextBlock Text="Product"
+                               Style="{StaticResource InLabel}"
+                               Margin="0,0,10,0"/>
+
+                    <ComboBox x:Name="ProductComboBox"
+                              Width="200"
+                              Height="42"
+                              FontSize="15"
+                              Padding="9,3"
+                              IsEditable="False"
+                              Background="White"
+                              BorderBrush="#BACCE8"/>
+
+                </StackPanel>
+
+                <!-- REPORTING PERIOD
+                     Only actual recorded weeks are selectable.
+                     No individual-date picker or calendar popup. -->
+
+                <StackPanel Orientation="Horizontal"
+                            Margin="0,0,15,10"
+                            VerticalAlignment="Center">
+
+                    <TextBlock Text="Reporting Period"
+                               Style="{StaticResource InLabel}"
+                               Margin="0,0,10,0"/>
+
+                    <TextBlock Text="From"
+                               Style="{StaticResource InLabel}"
+                               Margin="0,0,6,0"/>
+
+                    <ComboBox
+                        x:Name="FromWeekComboBox"
+                        Style="{StaticResource InWeekCombo}"
+                        ToolTip="First recorded week in the analysis period"/>
+
+                    <TextBlock Text="To"
+                               Style="{StaticResource InLabel}"
+                               Margin="9,0,6,0"/>
+
+                    <ComboBox
+                        x:Name="ThroughWeekComboBox"
+                        Style="{StaticResource InWeekCombo}"
+                        ToolTip="Last recorded week in the analysis period"/>
+
+                </StackPanel>
+
+                <!-- RECORDED WEEK COUNT -->
+
+                <TextBlock x:Name="RecordedWeeksText"
+                           Text="6 recorded weeks"
+                           FontSize="14"
+                           Foreground="{StaticResource InInk}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,18,10"/>
+
+                <!-- ANALYZE BUTTON -->
+
+                <Button Content="Analyze"
+                        Style="{StaticResource InPrimaryButton}"
+                        Margin="0,0,0,10"
+                        Click="AnalyzeButton_Click"/>
+
+            </WrapPanel>
+
+            <!-- VALIDATION MESSAGE -->
+
+            <TextBlock x:Name="StatusText"
+                       Grid.Row="2"
+                       Visibility="Collapsed"
+                       Foreground="#A24E27"
+                       FontSize="14"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,10"/>
+
+            <!-- =====================================================
+                 MAIN BODY
+                 ===================================================== -->
+
+            <Grid x:Name="BodyGrid"
+                  Grid.Row="3">
+
+                <Grid.RowDefinitions>
+
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+
+                </Grid.RowDefinitions>
+
+                <Grid.ColumnDefinitions>
+
+                    <ColumnDefinition Width="2.2*"/>
+                    <ColumnDefinition Width="1.2*"/>
+
+                </Grid.ColumnDefinitions>
+
+                <!-- =================================================
+                     LEFT COLUMN
+                     ================================================= -->
+
+                <Grid x:Name="LeftColumn"
+                      Grid.Row="0"
+                      Grid.Column="0"
+                      Margin="0,0,14,0">
+
+                    <Grid.RowDefinitions>
+
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+
+                    </Grid.RowDefinitions>
+
+                    <!-- =============================================
+                         STATISTICAL SUMMARY
+                         ============================================= -->
+
+                    <Border Grid.Row="0"
+                            Style="{StaticResource InCard}">
+
+                        <StackPanel>
+
+                            <TextBlock
+                                Text="Statistical Summary"
+                                Style="{StaticResource InSectionTitle}"/>
+
+                            <TextBlock
+                                x:Name="SummarySubtitle"
+                                Text="Weekly units sold by product · 6 recorded weeks"
+                                Foreground="{StaticResource InBlue}"
+                                FontSize="15"
+                                Margin="0,0,0,12"/>
+
+                            <!-- Clicking a product row updates its
+                                 interpretation and trend chart. -->
+
+                            <DataGrid
+                                x:Name="SummaryTable"
+                                AutoGenerateColumns="False"
+                                CanUserAddRows="False"
+                                CanUserDeleteRows="False"
+                                CanUserResizeRows="False"
+                                IsReadOnly="True"
+                                CanUserSortColumns="False"
+                                HeadersVisibility="Column"
+                                GridLinesVisibility="Horizontal"
+                                HorizontalGridLinesBrush="#E3EAF3"
+                                RowHeight="33"
+                                ColumnHeaderHeight="36"
+                                Background="White"
+                                BorderThickness="0"
+                                RowStyle="{StaticResource InRow}"
+                                CellStyle="{StaticResource InCell}"
+                                SelectionMode="Single"
+                                SelectionUnit="FullRow"
+                                MaxHeight="285"
+                                ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                                ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                SelectionChanged="SummaryTable_SelectionChanged">
+
+                                <DataGrid.Columns>
+
+                                    <DataGridTextColumn
+                                        Header="Product"
+                                        Binding="{Binding ProductName}"
+                                        Width="2*"
+                                        ElementStyle="{StaticResource InNameText}"/>
+
+                                    <DataGridTextColumn
+                                        Header="Total"
+                                        Binding="{Binding Total}"
+                                        Width="*"
+                                        ElementStyle="{StaticResource InCellText}"/>
+
+                                    <DataGridTextColumn
+                                        Header="Mean"
+                                        Binding="{Binding Mean, StringFormat=F2}"
+                                        Width="*"
+                                        ElementStyle="{StaticResource InCellText}"/>
+
+                                    <DataGridTextColumn
+                                        Header="Median"
+                                        Binding="{Binding Median, StringFormat=F1}"
+                                        Width="*"
+                                        ElementStyle="{StaticResource InCellText}"/>
+
+                                    <DataGridTextColumn
+                                        Header="Range"
+                                        Binding="{Binding Range}"
+                                        Width="*"
+                                        ElementStyle="{StaticResource InCellText}"/>
+
+                                    <DataGridTextColumn
+                                        Header="Std. Dev."
+                                        Binding="{Binding StandardDeviation, StringFormat=F2}"
+                                        Width="*"
+                                        ElementStyle="{StaticResource InCellText}"/>
+
+                                </DataGrid.Columns>
+
+                            </DataGrid>
+
+                        </StackPanel>
+
+                    </Border>
+
+                    <!-- =============================================
+                         WEEKLY SALES TREND
+                         ============================================= -->
+
+                    <Border Grid.Row="1"
+                            Style="{StaticResource InCard}"
+                            Margin="0,14,0,0">
+
+                        <StackPanel>
+
+                            <TextBlock
+                                x:Name="TrendTitle"
+                                Text="Weekly Sales Trend — Rice 5kg"
+                                Style="{StaticResource InSectionTitle}"
+                                TextWrapping="Wrap"/>
+
+                            <TextBlock
+                                Text="Units sold per week"
+                                Foreground="{StaticResource InBlue}"
+                                FontSize="15"
+                                Margin="0,0,0,8"/>
+
+                            <Grid Height="250">
+
+                                <Grid.ColumnDefinitions>
+
+                                    <ColumnDefinition Width="24"/>
+                                    <ColumnDefinition Width="*"/>
+
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock
+                                    x:Name="YAxisLabel"
+                                    Grid.Column="0"
+                                    Text="Bags sold"
+                                    LayoutTransform="{StaticResource InAxisRotation}"
+                                    Foreground="{StaticResource InInk}"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    FontSize="12"/>
+
+                                <Canvas
+                                    x:Name="TrendCanvas"
+                                    Grid.Column="1"
+                                    Background="Transparent"
+                                    SizeChanged="TrendCanvas_SizeChanged"/>
+
+                            </Grid>
+
+                        </StackPanel>
+
+                    </Border>
+
+                </Grid>
+
+                <!-- =================================================
+                     RIGHT COLUMN - STATISTICAL INTERPRETATION
+                     ================================================= -->
+
+                <Border x:Name="InterpretationCard"
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Style="{StaticResource InCard}">
+
+                    <StackPanel>
+
+                        <TextBlock
+                            Text="Statistical Interpretation"
+                            Style="{StaticResource InSectionTitle}"
+                            TextWrapping="Wrap"
+                            Margin="0,0,0,8"/>
+
+                        <TextBlock
+                            x:Name="InterpretationProduct"
+                            Text="Rice 5kg"
+                            FontSize="23"
+                            FontWeight="Bold"
+                            Foreground="{StaticResource InInk}"/>
+
+                        <TextBlock
+                            x:Name="InterpretationWeeks"
+                            Text="Based on 6 recorded weeks"
+                            FontSize="13"
+                            Foreground="#596D94"
+                            Margin="0,0,0,10"/>
+
+                        <Border Height="1"
+                                Background="#BECDEA"
+                                Margin="0,0,0,10"/>
+
+                        <!-- AVERAGE WEEKLY SALES -->
+
+                        <TextBlock
+                            Text="Average Weekly Sales"
+                            FontWeight="Bold"
+                            FontSize="15"
+                            Foreground="{StaticResource InInk}"/>
+
+                        <TextBlock
+                            x:Name="AverageSalesText"
+                            Text="46 bags/week"
+                            FontSize="26"
+                            FontWeight="Bold"
+                            Foreground="{StaticResource InTeal}"
+                            Margin="0,0,0,11"
+                            TextWrapping="Wrap"/>
+
+                        <!-- SALES VARIABILITY -->
+
+                        <TextBlock
+                            Text="Sales Variability"
+                            FontWeight="Bold"
+                            FontSize="15"
+                            Foreground="{StaticResource InInk}"/>
+
+                        <TextBlock
+                            x:Name="VariabilityText"
+                            FontSize="14"
+                            Foreground="{StaticResource InInk}"
+                            TextWrapping="Wrap"
+                            Margin="0,3,0,11"/>
+
+                        <Border Height="1"
+                                Background="#BECDEA"
+                                Margin="0,0,0,10"/>
+
+                        <!-- INVENTORY INDICATOR -->
+
+                        <TextBlock
+                            Text="Inventory Indicator"
+                            Style="{StaticResource InSectionTitle}"
+                            Margin="0,0,0,7"/>
+
+                        <Grid Margin="0,0,0,4">
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock
+                                Text="Available stock:"
+                                FontSize="14"/>
+
+                            <TextBlock
+                                x:Name="AvailableStockText"
+                                Grid.Column="1"
+                                FontSize="14"/>
+
+                        </Grid>
+
+                        <Grid Margin="0,0,0,9">
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock
+                                Text="Weekly average:"
+                                FontSize="14"/>
+
+                            <TextBlock
+                                x:Name="InventoryAverageText"
+                                Grid.Column="1"
+                                FontSize="14"/>
+
+                        </Grid>
+
+                        <Border
+                            x:Name="StockStatusBadge"
+                            Background="#FFE6CD"
+                            CornerRadius="15"
+                            HorizontalAlignment="Left"
+                            Padding="12,5"
+                            Margin="0,0,0,5">
+
+                            <TextBlock
+                                x:Name="StockStatusText"
+                                Text="Below Average"
+                                Foreground="#E34619"
+                                FontWeight="Bold"
+                                FontSize="15"/>
+
+                        </Border>
+
+                        <TextBlock
+                            x:Name="StockExplanationText"
+                            FontSize="13"
+                            TextWrapping="Wrap"
+                            Foreground="{StaticResource InInk}"
+                            Margin="0,0,0,12"/>
+
+                        <Border Height="1"
+                                Background="#BECDEA"
+                                Margin="0,0,0,11"/>
+
+                        <!-- PERIOD HIGHLIGHTS -->
+
+                        <TextBlock
+                            Text="Period Highlights"
+                            Style="{StaticResource InSectionTitle}"
+                            Margin="0,0,0,8"/>
+
+                        <Grid Margin="0,0,0,7">
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="1.4*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock
+                                Text="Highest total:"
+                                FontSize="14"
+                                FontWeight="SemiBold"/>
+
+                            <TextBlock
+                                x:Name="HighestTotalText"
+                                Grid.Column="1"
+                                FontSize="14"
+                                TextWrapping="Wrap"/>
+
+                        </Grid>
+
+                        <Grid Margin="0,0,0,13">
+
+                            <Grid.ColumnDefinitions>
+
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="1.4*"/>
+
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock
+                                Text="Lowest total:"
+                                FontSize="14"
+                                FontWeight="SemiBold"/>
+
+                            <TextBlock
+                                x:Name="LowestTotalText"
+                                Grid.Column="1"
+                                FontSize="14"
+                                TextWrapping="Wrap"/>
+
+                        </Grid>
+
+                        <Border Height="1"
+                                Background="#BECDEA"
+                                Margin="0,0,0,11"/>
+
+                        <TextBlock
+                            Text="Based on recorded sales only."
+                            FontStyle="Italic"
+                            FontSize="13"
+                            Foreground="{StaticResource InBlue}"/>
+
+                    </StackPanel>
+
+                </Border>
+
+            </Grid>
+
+        </Grid>
+
+    </ScrollViewer>
+
+</UserControl>

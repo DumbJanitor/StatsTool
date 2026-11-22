@@ -1,9 +1,22 @@
 ﻿<Application x:Class="StatsTool.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:StatsTool"
              StartupUri="MainWindow.xaml">
+
     <Application.Resources>
-         
+
+        <ResourceDictionary>
+
+            <ResourceDictionary.MergedDictionaries>
+
+                <!-- Shared SalesScope colors and styles -->
+                <ResourceDictionary
+                    Source="Resources/Theme.xaml"/>
+
+            </ResourceDictionary.MergedDictionaries>
+
+        </ResourceDictionary>
+
     </Application.Resources>
+
 </Application>

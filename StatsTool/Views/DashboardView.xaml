@@ -1,0 +1,501 @@
+﻿<UserControl x:Class="StatsTool.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Loaded="DashboardView_Loaded"
+             SizeChanged="DashboardView_SizeChanged"
+             FontFamily="Segoe UI">
+
+    <!--
+    ============================================================
+    SALESSCOPE - DASHBOARD
+    ============================================================
+
+    FRONTEND TEAM:
+    - Dashboard uses the existing MainWindow navigation shell.
+    - Do not add another sidebar or title bar here.
+    - Cards display in two columns on wider screens.
+    - Cards switch to one column when space becomes limited.
+    - Charts resize with their containers.
+    - The figures currently come from DashboardView.xaml.cs.
+
+    BACKEND TEAM:
+    - Replace sample dashboard data with actual calculations.
+    - Supply weekly sales totals and product-level sales.
+    - Supply inventory flags and weekly trend records.
+    - Refresh the dashboard when its source data changes.
+    - Use UpdateDashboard(...) in the code-behind as the
+      frontend integration point.
+
+    DATABASE TEAM:
+    - Supply product identifiers and names.
+    - Supply daily sales quantities and their dates.
+    - Supply current inventory quantities.
+    - Supply historical weekly sales records.
+    - Coordinate the reporting-week definition with backend.
+    - Do not write database queries inside this view.
+
+    IMPORTANT:
+    Displayed values are FRONTEND SAMPLE DATA until integrated.
+    ============================================================
+    -->
+
+    <UserControl.Resources>
+
+        <!-- Dashboard cards -->
+        <Style x:Key="DashboardCardStyle"
+               TargetType="Border">
+
+            <Setter Property="Background"
+                    Value="White"/>
+
+            <Setter Property="BorderBrush"
+                    Value="#E3EAF1"/>
+
+            <Setter Property="BorderThickness"
+                    Value="1"/>
+
+            <Setter Property="CornerRadius"
+                    Value="16"/>
+
+            <Setter Property="Padding"
+                    Value="20"/>
+
+            <Setter Property="Margin"
+                    Value="8"/>
+
+            <Setter Property="MinHeight"
+                    Value="338"/>
+
+        </Style>
+
+        <!-- Panel headings -->
+        <Style x:Key="DashboardHeadingStyle"
+               TargetType="TextBlock">
+
+            <Setter Property="FontSize"
+                    Value="23"/>
+
+            <Setter Property="FontWeight"
+                    Value="Bold"/>
+
+            <Setter Property="Foreground"
+                    Value="#0B1530"/>
+
+        </Style>
+
+        <!-- Panel subtitles -->
+        <Style x:Key="DashboardSubtitleStyle"
+               TargetType="TextBlock">
+
+            <Setter Property="FontSize"
+                    Value="14"/>
+
+            <Setter Property="Foreground"
+                    Value="#173A84"/>
+
+        </Style>
+
+        <!-- Table labels -->
+        <Style x:Key="DashboardTableTextStyle"
+               TargetType="TextBlock">
+
+            <Setter Property="FontSize"
+                    Value="13"/>
+
+            <Setter Property="Foreground"
+                    Value="#0B1530"/>
+
+            <Setter Property="VerticalAlignment"
+                    Value="Center"/>
+
+        </Style>
+
+    </UserControl.Resources>
+
+    <!-- PAGE SCROLLING -->
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  Background="#FCFDFE">
+
+        <!--
+            FRONTEND NOTE:
+            Columns property is managed by DashboardView.xaml.cs.
+            Do not replace this with fixed-width columns.
+        -->
+
+        <UniformGrid x:Name="CardsPanel"
+                     Columns="2"
+                     Margin="8,8,8,16">
+
+            <!-- ============================================
+                 CARD 1 - THIS WEEK'S SALES
+                 ============================================ -->
+
+            <Border Style="{StaticResource DashboardCardStyle}">
+
+                <StackPanel>
+
+                    <TextBlock Text="This Week's Sales"
+                               Style="{StaticResource DashboardHeadingStyle}"/>
+
+                    <TextBlock Text="{Binding WeekRange}"
+                               Style="{StaticResource DashboardSubtitleStyle}"
+                               Margin="0,3,0,15"/>
+
+                    <!-- SALES SUMMARY -->
+                    <Grid Margin="0,0,0,15">
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="1"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Units sold -->
+                        <StackPanel Grid.Column="0"
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+
+                            <TextBlock Text="{Binding TotalUnits}"
+                                       FontSize="31"
+                                       FontWeight="Bold"
+                                       Foreground="#00A889"
+                                       VerticalAlignment="Center"/>
+
+                            <TextBlock Text="units sold"
+                                       FontSize="14"
+                                       Foreground="#0B1530"
+                                       VerticalAlignment="Center"
+                                       Margin="8,0,0,0"/>
+
+                        </StackPanel>
+
+                        <!-- Divider -->
+                        <Border Grid.Column="1"
+                                Height="36"
+                                Background="#B5C7E7"
+                                VerticalAlignment="Center"/>
+
+                        <!-- Products sold -->
+                        <StackPanel Grid.Column="2"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+
+                            <TextBlock Text="{Binding ProductCount}"
+                                       FontSize="31"
+                                       FontWeight="Bold"
+                                       Foreground="#00A889"
+                                       VerticalAlignment="Center"/>
+
+                            <TextBlock Text="products sold"
+                                       FontSize="14"
+                                       Foreground="#0B1530"
+                                       VerticalAlignment="Center"
+                                       Margin="8,0,0,0"/>
+
+                        </StackPanel>
+
+                    </Grid>
+
+                    <!-- TABLE HEADER -->
+                    <Border Background="#EAF0F4"
+                            CornerRadius="5"
+                            Height="30">
+
+                        <Grid>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="70"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="Product"
+                                       FontSize="13"
+                                       FontWeight="Bold"
+                                       Foreground="#0B1530"
+                                       VerticalAlignment="Center"
+                                       Margin="10,0,0,0"/>
+
+                            <TextBlock Grid.Column="1"
+                                       Text="Units"
+                                       FontSize="13"
+                                       FontWeight="Bold"
+                                       Foreground="#0B1530"
+                                       VerticalAlignment="Center"
+                                       TextAlignment="Center"/>
+
+                        </Grid>
+
+                    </Border>
+
+                    <!-- SALES ROWS -->
+                    <ItemsControl ItemsSource="{Binding SalesRows}">
+
+                        <ItemsControl.ItemTemplate>
+
+                            <DataTemplate>
+
+                                <Border BorderBrush="#E3EAF1"
+                                        BorderThickness="0,0,0,1">
+
+                                    <Grid Height="28">
+
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="70"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Text="{Binding Product}"
+                                                   Style="{StaticResource DashboardTableTextStyle}"
+                                                   Margin="10,0,0,0"/>
+
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding Units}"
+                                                   Style="{StaticResource DashboardTableTextStyle}"
+                                                   TextAlignment="Center"/>
+
+                                    </Grid>
+
+                                </Border>
+
+                            </DataTemplate>
+
+                        </ItemsControl.ItemTemplate>
+
+                    </ItemsControl>
+
+                </StackPanel>
+
+            </Border>
+
+            <!-- ============================================
+                 CARD 2 - INVENTORY OVERVIEW
+                 ============================================ -->
+
+            <Border Style="{StaticResource DashboardCardStyle}">
+
+                <Grid>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="22"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Text="Inventory Overview"
+                               Style="{StaticResource DashboardHeadingStyle}"/>
+
+                    <StackPanel Grid.Row="1"
+                                Orientation="Horizontal"
+                                Margin="0,3,0,0">
+
+                        <TextBlock Text="{Binding FlaggedCount}"
+                                   Style="{StaticResource DashboardSubtitleStyle}"/>
+
+                        <TextBlock Text=" products flagged for review"
+                                   Style="{StaticResource DashboardSubtitleStyle}"/>
+
+                    </StackPanel>
+
+                    <!-- INVENTORY HEADER -->
+                    <Border Grid.Row="3"
+                            Background="#EAF0F4"
+                            CornerRadius="5"
+                            Height="30">
+
+                        <Grid>
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="70"/>
+                                <ColumnDefinition Width="90"/>
+                                <ColumnDefinition Width="108"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="Product"
+                                       FontSize="13"
+                                       FontWeight="Bold"
+                                       Margin="10,0,0,0"
+                                       VerticalAlignment="Center"
+                                       Foreground="#0B1530"/>
+
+                            <TextBlock Grid.Column="1"
+                                       Text="In Stock"
+                                       FontSize="12"
+                                       FontWeight="Bold"
+                                       TextAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Foreground="#0B1530"/>
+
+                            <TextBlock Grid.Column="2"
+                                       Text="Weekly Avg."
+                                       FontSize="12"
+                                       FontWeight="Bold"
+                                       TextAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Foreground="#0B1530"/>
+
+                        </Grid>
+
+                    </Border>
+
+                    <!-- FLAGGED INVENTORY ROWS -->
+                    <ItemsControl Grid.Row="4"
+                                  ItemsSource="{Binding StockFlags}">
+
+                        <ItemsControl.ItemTemplate>
+
+                            <DataTemplate>
+
+                                <Border BorderBrush="#E3EAF1"
+                                        BorderThickness="0,0,0,1">
+
+                                    <Grid Height="48">
+
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="70"/>
+                                            <ColumnDefinition Width="90"/>
+                                            <ColumnDefinition Width="108"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Text="{Binding Product}"
+                                                   Style="{StaticResource DashboardTableTextStyle}"
+                                                   Margin="10,0,0,0"/>
+
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding CurrentStock}"
+                                                   Style="{StaticResource DashboardTableTextStyle}"
+                                                   TextAlignment="Center"/>
+
+                                        <TextBlock Grid.Column="2"
+                                                   Text="{Binding WeeklyAverage, StringFormat={}{0:0.#}}"
+                                                   Style="{StaticResource DashboardTableTextStyle}"
+                                                   TextAlignment="Center"/>
+
+                                        <Border Grid.Column="3"
+                                                Background="#FFE9D4"
+                                                CornerRadius="12"
+                                                Margin="4,0"
+                                                Padding="6,4"
+                                                VerticalAlignment="Center">
+
+                                            <TextBlock Text="Below average"
+                                                       FontSize="10"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#E94A16"
+                                                       TextAlignment="Center"/>
+
+                                        </Border>
+
+                                    </Grid>
+
+                                </Border>
+
+                            </DataTemplate>
+
+                        </ItemsControl.ItemTemplate>
+
+                    </ItemsControl>
+
+                    <!-- INVENTORY EXPLANATION -->
+                    <TextBlock Grid.Row="6"
+                               Text="Flagged when current stock is below average weekly sales."
+                               FontSize="12"
+                               FontStyle="Italic"
+                               Foreground="#173A84"
+                               TextWrapping="Wrap"
+                               Margin="0,10,0,0"/>
+
+                </Grid>
+
+            </Border>
+
+            <!-- ============================================
+                 CARD 3 - TOP SELLING PRODUCTS
+                 ============================================ -->
+
+            <Border Style="{StaticResource DashboardCardStyle}">
+
+                <Grid>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"
+                               Text="Top Selling Products"
+                               Style="{StaticResource DashboardHeadingStyle}"/>
+
+                    <!--
+                        Bars are rendered in code-behind.
+                        They use SalesRows from DashboardSnapshot.
+                    -->
+                    <Canvas x:Name="TopProductsCanvas"
+                            Grid.Row="1"
+                            Height="218"
+                            Margin="0,15,0,8"
+                            SizeChanged="ChartCanvas_SizeChanged"/>
+
+                    <!-- NAVIGATE TO COMPARISONS -->
+                    <Button Grid.Row="2"
+                            Click="CompareWeeksButton_Click"
+                            HorizontalAlignment="Left"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Padding="0"
+                            Cursor="Hand">
+
+                        <TextBlock Text="Compare weeks"
+                                   TextDecorations="Underline"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   Foreground="#00A889"/>
+
+                    </Button>
+
+                </Grid>
+
+            </Border>
+
+            <!-- ============================================
+                 CARD 4 - WEEKLY SALES TREND
+                 ============================================ -->
+
+            <Border Style="{StaticResource DashboardCardStyle}">
+
+                <StackPanel>
+
+                    <TextBlock Text="Weekly Sales Trend"
+                               Style="{StaticResource DashboardHeadingStyle}"/>
+
+                    <TextBlock Text="Total units sold per week"
+                               Style="{StaticResource DashboardSubtitleStyle}"
+                               Margin="0,3,0,8"/>
+
+                    <!--
+                        Line chart is rendered in code-behind.
+                        It uses WeeklyTrend from DashboardSnapshot.
+                    -->
+                    <Canvas x:Name="TrendCanvas"
+                            Height="235"
+                            Margin="0,6,0,0"
+                            SizeChanged="ChartCanvas_SizeChanged"/>
+
+                </StackPanel>
+
+            </Border>
+
+        </UniformGrid>
+
+    </ScrollViewer>
+
+</UserControl>

@@ -1,0 +1,98 @@
+﻿<UserControl x:Class="StatsTool.Views.StartView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+
+             Background="White"
+             FontFamily="Segoe UI">
+
+    <!-- =====================================================
+         SALESSCOPE START PAGE
+
+         FRONTEND:
+         Initial screen displayed when the application opens.
+
+         BACKEND:
+         No database or authentication calls occur here.
+         ===================================================== -->
+
+    <Grid Background="White">
+
+        <!--
+            Responsive content container.
+
+            Uniform keeps proportions consistent.
+            DownOnly prevents excessive enlargement.
+        -->
+        <Viewbox Stretch="Uniform"
+                 StretchDirection="DownOnly"
+                 HorizontalAlignment="Center"
+                 VerticalAlignment="Center"
+                 Margin="30,55,30,30">
+
+            <StackPanel Width="1020"
+                        HorizontalAlignment="Center">
+
+
+                <!-- SALESSCOPE LOGO -->
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+
+                    <!-- TEAL PIE SYMBOL -->
+                    <Canvas Width="116"
+                            Height="116">
+
+                        <Ellipse Canvas.Left="4"
+                                 Canvas.Top="4"
+                                 Width="108"
+                                 Height="108"
+                                 Fill="#009F91"/>
+
+                        <Path Data="M58,4 L58,58 L112,58 M58,58 L96,96"
+                              Stroke="White"
+                              StrokeThickness="6"/>
+
+                    </Canvas>
+
+
+                    <!-- SALESSCOPE WORDMARK -->
+                    <TextBlock Text="SalesScope"
+                               FontSize="88"
+                               FontWeight="Bold"
+                               Foreground="#0B1530"
+                               VerticalAlignment="Center"
+                               Margin="20,0,0,0"/>
+
+                </StackPanel>
+
+
+                <!-- DESCRIPTION -->
+                <TextBlock
+                    Text="A Statistical Analysis Tool for Sales and Inventory Patterns"
+                    FontSize="28"
+                    FontWeight="SemiBold"
+                    Foreground="#586581"
+                    TextAlignment="Center"
+                    TextWrapping="Wrap"
+                    HorizontalAlignment="Stretch"
+                    Margin="0,36,0,58"/>
+
+
+                <!-- START BUTTON -->
+                <Button x:Name="StartButton"
+                        Content="Start"
+                        Width="290"
+                        Height="68"
+                        FontSize="28"
+                        FontWeight="Bold"
+                        HorizontalAlignment="Center"
+                        Style="{StaticResource SSPrimaryButtonStyle}"
+                        Click="StartButton_Click"/>
+
+            </StackPanel>
+
+        </Viewbox>
+
+    </Grid>
+
+</UserControl>
