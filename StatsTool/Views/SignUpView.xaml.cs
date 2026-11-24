@@ -3,13 +3,14 @@ using System.Net.Mail;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using Microsoft.Data.SqlClient;
 
 namespace StatsTool.Views
 {
     public partial class SignUpView : UserControl
     {
         private bool _passwordVisible;
-
+        private string connectionString = @"Server=ANDREI-LP;Database=SaleScope;Trusted_Connection=True;TrustServerCertificate=True;";
         public SignUpView()
         {
             InitializeComponent();
@@ -75,7 +76,7 @@ namespace StatsTool.Views
         // SIGN UP
         // =====================================================
 
-        private void SignUpButton_Click(
+        private async void SignUpButton_Click(
             object sender,
             RoutedEventArgs e)
         {
@@ -91,13 +92,15 @@ namespace StatsTool.Views
                 PasswordInput.Password = VisiblePasswordTextBox.Text;
             }
 
+            string password = PasswordInput.Password;
+
             // -----------------------------------------------
             // FRONTEND VALIDATION
             // -----------------------------------------------
 
             if (string.IsNullOrWhiteSpace(username) ||
                 string.IsNullOrWhiteSpace(email) ||
-                PasswordInput.SecurePassword.Length == 0)
+                string.IsNullOrWhiteSpace(password))
             {
                 ShowFeedback(
                     "Please complete all fields.",
@@ -126,43 +129,107 @@ namespace StatsTool.Views
             }
 
             // =================================================
-            // BACKEND TEAM - ACCOUNT REGISTRATION
+            // DATABASE AUTHENTICATION - ACCOUNT REGISTRATION
             // =================================================
             //
-            // Replace the preview message below with:
-            //
-            // 1. Submit username, email, and password securely.
-            // 2. Validate all fields on the server.
-            // 3. Check for duplicate username/email.
-            // 4. Create the account only after validation.
-            // 5. Handle errors returned by the backend.
-            // 6. On successful registration:
-            //
-            //       GetMainWindow()?.ShowLogin();
-            //
-            //    OR follow the team's chosen authentication flow.
+            // 1. Connect to the SQL Server database.
+            // 2. Generate a unique user ID.
+            // 3. Insert the username, email, and password.
+            // 4. Assign the default Client role.
+            // 5. Return to Login after successful registration.
             //
             // SECURITY:
-            // - Never log or hardcode passwords.
-            // - Do not perform SQL queries in this view.
-            // - Password storage and hashing belong to backend.
+            // - Do not hardcode usernames or passwords.
+            // - Use SQL parameters to prevent SQL injection.
+            // - Password hashing should be implemented before
+            //   using this registration system in production.
             //
             // DATABASE TEAM:
-            // - Coordinate account creation with backend.
-            // - Enforce unique username/email constraints.
-            // - Provide appropriate database error handling.
+            // - U_ID is generated automatically.
+            // - U_Email must be unique.
+            // - U_Name is stored in the U_Name column.
             //
             // =================================================
-            // TEMPORARY FRONTEND BEHAVIOR
-            // =================================================
-            //
-            // No account is created yet.
-            // This message is shown until backend is connected.
 
-            ShowFeedback(
-                "Registration is ready for backend integration. " +
-                "No account has been created yet.",
-                false);
+            try
+            {
+                using (SqlConnection connection =
+                    new SqlConnection(connectionString))
+                {
+                    await connection.OpenAsync();
+
+                    // Generate the next user ID.
+                    // Format: U0001, U0002, U0003, and so on.
+
+                    string idQuery = @"SELECT ISNULL(MAX(CAST(SUBSTRING(U_ID, 2, LEN(U_ID)) AS INT)), 0) + 1 FROM [User] WHERE U_ID LIKE 'U[0-9]%'";
+
+                    int nextID;
+
+                    using (SqlCommand idCommand =
+                        new SqlCommand(idQuery, connection))
+                    {
+                        nextID = Convert.ToInt32(await idCommand.ExecuteScalarAsync());
+                    }
+
+                    string userID = "U" + nextID.ToString("D4");
+
+                    string query = @"
+                INSERT INTO [User]
+                (U_ID, U_Email, U_Password, U_Name, U_Role)
+                VALUES
+                (@UserID, @Email, @Password, @Name, @Role)";
+
+                    using (SqlCommand command =
+                        new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@UserID", userID);
+                        command.Parameters.AddWithValue("@Email", email);
+                        command.Parameters.AddWithValue("@Password", password);
+                        command.Parameters.AddWithValue("@Name", username);
+                        command.Parameters.AddWithValue("@Role", "Client");
+
+                        int result = await command.ExecuteNonQueryAsync();
+
+                        if (result > 0)
+                        {
+                            // REGISTRATION SUCCESSFUL:
+                            // The new account has been saved to SQL Server.
+
+                            ShowFeedback(
+                                "Account created successfully! You can now log in.",
+                                false);
+
+                            // Return to Login after successful registration.
+                            GetMainWindow()?.ShowLogin();
+                        }
+                        else
+                        {
+                            // REGISTRATION FAILED:
+                            // No account was inserted.
+                            ShowFeedback(
+                                "Account registration failed.",
+                                true);
+                        }
+                    }
+                }
+            }
+            catch (SqlException ex) when (
+                ex.Number == 2601 || ex.Number == 2627)
+            {
+                // DUPLICATE EMAIL:
+                // The email already exists in the User table.
+                ShowFeedback(
+                    "This email is already registered.",
+                    true);
+            }
+            catch (Exception)
+            {
+                // DATABASE ERROR:
+                // Display an error if the database connection fails.
+                ShowFeedback(
+                    "Unable to register. Please check your database connection.",
+                    true);
+            }
         }
 
         // =====================================================

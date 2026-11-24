@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.Data.SqlClient;
 
 namespace StatsTool.Views
 {
     public partial class LoginView : UserControl
     {
         private bool _passwordVisible;
+        private string connectionString = @"Server=ANDREI-LP;Database=SaleScope;Trusted_Connection=True;TrustServerCertificate=True;";
 
         public LoginView()
         {
@@ -73,13 +75,13 @@ namespace StatsTool.Views
         // LOGIN
         // =====================================================
 
-        private void LoginButton_Click(
-            object sender,
-            RoutedEventArgs e)
+        private async void LoginButton_Click(
+    object sender,
+    RoutedEventArgs e)
         {
             FeedbackText.Visibility = Visibility.Collapsed;
 
-            string username = UsernameTextBox.Text.Trim();
+            string email = UsernameTextBox.Text.Trim();
 
             // Keep the existing authentication source synchronized
             // if the user last typed while the password was visible.
@@ -88,51 +90,82 @@ namespace StatsTool.Views
                 PasswordInput.Password = VisiblePasswordTextBox.Text;
             }
 
+            string password = PasswordInput.Password;
+
             // FRONTEND VALIDATION:
             // Only verify that required fields are filled.
             // Actual credential verification belongs to backend.
 
-            if (string.IsNullOrWhiteSpace(username) ||
-                PasswordInput.SecurePassword.Length == 0)
+            if (string.IsNullOrWhiteSpace(email) ||
+                string.IsNullOrWhiteSpace(password))
             {
-                ShowError("Please enter your username and password.");
+                ShowError("Please enter your email and password.");
                 return;
             }
 
             // =================================================
-            // BACKEND TEAM - AUTHENTICATION INTEGRATION
+            // DATABASE AUTHENTICATION
             // =================================================
             //
-            // Replace the temporary navigation below with:
+            // 1. Connect to the SQL Server database.
+            // 2. Find the account using its registered email.
+            // 3. Verify the password against the stored password.
+            // 4. Open the Dashboard only if the credentials match.
             //
-            // 1. Read username and password securely.
-            // 2. Submit credentials to the authentication service.
-            // 3. Await authentication result.
-            // 4. Display an error if authentication fails.
-            // 5. Establish the authenticated user session.
-            // 6. Apply RememberMeCheckBox.IsChecked == true
-            //    according to the session persistence policy.
-            // 7. Navigate to Dashboard only after success.
-            //
+            // Users can log in using their email only.
             // Do not hardcode usernames or passwords.
-            // Do not store passwords in application settings.
-            // Do not perform SQL queries inside this view.
-            //
-            // DATABASE TEAM:
-            // Coordinate account lookup and password verification
-            // with backend. Keep database access out of UI code.
             //
             // =================================================
-            // TEMPORARY FRONTEND PREVIEW
-            // =================================================
-            //
-            // Any non-empty username/password opens Dashboard
-            // ONLY so the frontend navigation can be tested.
-            //
-            // THIS IS NOT REAL AUTHENTICATION.
-            // Remove this preview behavior during integration.
 
-            GetMainWindow()?.ShowDashboard();
+            try
+            {
+                using (SqlConnection connection =
+                    new SqlConnection(connectionString))
+                {
+                    await connection.OpenAsync();
+
+                    string query = @"
+                SELECT U_ID, U_Name, U_Email, U_Role
+                FROM [User]
+                WHERE U_Email = @Email
+                AND U_Password = @Password";
+
+                    using (SqlCommand command =
+                        new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@Email", email);
+                        command.Parameters.AddWithValue("@Password", password);
+
+                        using (SqlDataReader reader =
+                            await command.ExecuteReaderAsync())
+                        {
+                            if (await reader.ReadAsync())
+                            {
+                                // LOGIN SUCCESSFUL:
+                                // Retrieve the authenticated user's details.
+                                string userID = reader["U_ID"].ToString()!;
+                                string userName = reader["U_Name"].ToString()!;
+                                string userRole = reader["U_Role"].ToString()!;
+
+                                // Navigate to Dashboard after successful login.
+                                GetMainWindow()?.ShowDashboard();
+                            }
+                            else
+                            {
+                                // LOGIN FAILED:
+                                // Email or password does not match.
+                                ShowError("Invalid email or password.");
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // DATABASE ERROR:
+                // Display an error if the database connection fails.
+                ShowError("Unable to connect to the database.");
+            }
         }
 
         // =====================================================
